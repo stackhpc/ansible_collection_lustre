@@ -5,6 +5,10 @@ Note this role can't be tested using Docker as it requires specific/changing ker
 
 # Installation
 
+First `git clone` this repo to somewhere ansible expects to find collections, using the right namespace, e.g. `~/.ansible/collections/ansible_collections/stackhpc/lustre`.
+
+Install `molecule` and the `openstack` driver:
+
 ```shell
 sudo yum install -y gcc python3-pip python3-devel openssl-devel python3-libselinux
 cd <collection>
@@ -13,6 +17,10 @@ python3 -m venv venv-mol
 pip install -U pip
 pip install -r molecule/requirements.txt
 ```
+
+Install the roles this collection depends on, into `<repo_root>/roles`:
+TODO:
+
 
 # Configuration
 

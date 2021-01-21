@@ -1,0 +1,22 @@
+- name: Create sparse file
+  command:
+    cmd: "dd if=/dev/zero of={{ loopdev_path }} bs=1M seek={{ loopdev_size }} count=0"
+    creates: "{{ loopdev_path }}"
+  register: foo
+- name: Ensure loop device exists
+  loopdev:
+    path: "{{ loopdev_path }}"
+    fstype: "{{ loopdev_fstype }}"
+  register: loopdev
+- name: Ensure mount point exists
+  file:
+    path: "{{ loopdev_mountpoint }}"
+    state: directory  # TODO: owner/permissions??
+  when: loopdev_mountpoint is defined
+- name: Mount
+  mount:
+    path: "{{ loopdev_mountpoint }}"
+    src: "{{ loopdev.dev }}"
+    state: "{{ loopdev_mountstate }}"
+    fstype: "{{ loopdev_fstype }}"
+  when: loopdev_mountpoint is defined

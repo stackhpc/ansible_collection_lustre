@@ -1,7 +1,17 @@
 ---
-- name: Converge
-  hosts: all
+- name: Configure lustre server
+  hosts: servers
+  become: yes
   tasks:
-    - name: "Include lustre"
+    - name: "Configure loopdevs for lustre block devices"
       include_role:
-        name: "lustre"
+        name: loopdev
+          loopdev_path: "" # Required. Path to file backing loop device. Created if it doesn't exist
+          loopdev_size: 0 # Required. Size of device in MB
+    - name: "Include lustre server role"
+      include_role:
+        name: "stackhpc.lustre.server"
+      vars:
+        lustre_fs_name: test_fs
+        lustre_mgs_addr: "{{ hostvars[groups['servers'][0]].ansible_default_ipv4.address }}"
+        # TODO: add loop devices

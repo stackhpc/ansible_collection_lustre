@@ -1,0 +1,148 @@
+- name: Check required variables are set defined # TODO: is there a better way of doing this
+  assert:
+    that: "lookup('vars', '{{ item }}')"
+    fail_msg: "role variable '{{ item }}' not set"
+  loop:
+    - lustre_fs_name
+    - lustre_mgs_addr
+
+- name: Check Centos version
+  assert:
+    that:
+      - ansible_distribution_version in lustre_releases
+    fail_msg: "ansible_distribution_version must be one of {{ lustre_releases.keys() | list }}, not {{ ansible_distribution_version }}"
+    success_msg: "CentOS version ok"
+- name: select lustre release info # just for brevity
+  set_fact:
+    lustre_release: "{{ lustre_releases[ansible_distribution_version] }}"
+
+- name: enable lustre server repo
+  yum_repository:
+    name: lustre-server
+    description: lustre-server
+    file: lustre-repo
+    baseurl: https://downloads.whamcloud.com/public/lustre/lustre-{{ lustre_release.lustre_ver }}/el{{ ansible_distribution_major_version }}/patchless-ldiskfs-server # TODO: add "-ib" option
+    gpgcheck: no
+  register: lustre_server_repo
+- name: enable lustre e2fs repo
+  yum_repository:
+    name: e2fsprogs-wc
+    description: e2fsprogs-wc
+    file: lustre-repo
+    baseurl: https://downloads.whamcloud.com/public/e2fsprogs/{{ lustre_release.e2fsprogs}}/el{{ ansible_distribution_major_version }}/
+    gpgcheck: no
+  register: lustre_e2fs_repo
+- name: yum-clean-metadata
+  command: yum clean metadata
+  args:
+    warn: no
+  when: lustre_server_repo.changed or lustre_e2fs_repo.changed
+
+- name: Install Lustre Server
+  yum:
+    name: "lustre-{{ lustre_release.lustre_ver }}"
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  selinux:
+    policy: targeted
+    state: permissive
+
+# - name: configure and enable lnet
+#   import_tasks: lnet.yml
+#   when: lustre_lnet != 'tcp' # which is default
+
+# NB might need need clients UNMOUNTED and nodemap DEACTIVATED before running this if its making changes?
+# NB if you are using the default lnet (i.e. not specifically setting up lnets) then it is @tcp, not "@tcp1".
+- name: Load lustre
+  command: modprobe lustre
+  changed_when: False
+  # TODO: make persistent on boot via /etc/modules-load.d/
+
+- name: Format MGT
+  command: /usr/sbin/mkfs.lustre --mgs {{ lustre_mgt }}
+  register: command_result
+  failed_when: "command_result.rc != 0 and ('was previously formatted for lustre' not in command_result.stderr) and command_result.rc != 17"
+  changed_when: "command_result.rc == 0"
+  when: lustre_mgt | default('')
+  # TODO: run `lctl device_list` and check the management client entry matches the mgs node - if not, add reformat? "1 UP mgc MGC10.43.108.228@tcp 992a19e5-c7cd-b9af-b499-43e1f6b4348d 4"
+
+- name: Format MDTs
+  command: "/usr/sbin/mkfs.lustre --mdt {% if lustre_reformat | bool %}--reformat{% endif %} --fsname={{ lustre_fs_name }} --index={{ item.key }} --mgsnode={{ lustre_mgs_addr }}@{{ lustre_lnet }} {{ item.value }}"
+  register: command_result
+  loop: "{{ lustre_mdts | dict2items }}"
+  failed_when: "command_result.rc != 0 and ('was previously formatted for lustre' not in command_result.stderr) and command_result.rc != 17"
+  changed_when: "command_result.rc == 0"
+  when: lustre_mdts | default({})
+  # TODO: see check against mgs nid above
+
+- name: Format OSTs
+  command: "/usr/sbin/mkfs.lustre --ost {% if lustre_reformat | bool %}--reformat{% endif %} --fsname={{ lustre_fs_name }} --index={{ item.key }} --mgsnode={{ lustre_mgs_addr }}@{{ lustre_lnet }} {{ item.value }}"
+  register: command_result
+  loop: "{{ lustre_osts  | dict2items }}"
+  failed_when: "command_result.rc != 0 and ('was previously formatted for lustre' not in command_result.stderr) and command_result.rc != 17"
+  changed_when: "command_result.rc == 0"
+  when: lustre_osts | default({})
+  # TODO: see check against mgs nid above
+
+- name: Create MGS mount dir
+  file:
+    path: /lustre/mgt
+    state: directory
+    recurse: yes
+
+- name: mount MGSs
+  # command: mount -t lustre {{ lustre_mgt }} /lustre/mgt
+  # args:
+  #   warn: false
+  # register: command_result
+  # failed_when: "command_result.rc != 0 and ('is already mounted' not in command_result.stderr)"
+  # changed_when: "command_result.rc == 0"
+  mount:
+    fstype: lustre
+    src: "{{ lustre_mgt }}"
+    path: "/lustre/mgt"
+    state: mounted
+  when: lustre_mgt | default('')
+  
+- name: Create MDT mount dir
+  file:
+    path: /lustre/{{ lustre_fs_name }}/mdt{{ item.key }}
+    state: directory
+    recurse: yes
+  loop: "{{ lustre_mdts | dict2items }}"
+
+# TODO: consider order advice under Why not start the MDS after the OSSs? at https://wiki.lustre.org/Starting_and_Stopping_Lustre_Services
+- name: mount MDTs
+  mount:
+    fstype: lustre
+    src: "{{ item.value }}"
+    path: "/lustre/{{ lustre_fs_name }}/mdt{{ item.key }}"
+    state: mounted
+  # command: mount -t lustre {{ item.value }} /lustre/{{ lustre_fs_name }}/mdt{{ item.key }} # has to be an mdt0
+  # args:
+  #   warn: false
+  # register: command_result
+  # failed_when: "command_result.rc != 0 and ('is already mounted' not in command_result.stderr)"
+  # changed_when: "command_result.rc == 0"
+  loop: "{{ lustre_mdts | dict2items }}"
+  when: lustre_mdts | default({})
+  
+- name: Create OST mount dir
+  file:
+    path: /lustre/{{ lustre_fs_name }}/ost{{ item.key }}
+    state: directory
+    recurse: yes
+  loop: "{{ lustre_osts | dict2items }}"
+  
+- name: mount OSTs
+  mount:
+    fstype: lustre
+    src: "{{ item.value }}"
+    path: "/lustre/{{ lustre_fs_name }}/ost{{ item.key }}"
+    state: mounted
+  # command: mount -t lustre {{ item.value }} /lustre/{{ lustre_fs_name }}/ost{{ item.key }}
+  # register: command_result
+  # failed_when: "command_result.rc != 0 and ('is already mounted' not in command_result.stderr)"
+  # changed_when: "command_result.rc == 0"
+  loop: "{{ lustre_osts | dict2items }}"
+  when: lustre_osts | default({})
+  
