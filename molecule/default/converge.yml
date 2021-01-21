@@ -1,17 +1,51 @@
 ---
 - name: Configure lustre server
-  hosts: servers
+  hosts: molecule-lustre-server
   become: yes
+  vars:
+    molecule_server_disks:
+      - mgt
+      - mdt
+      - ost
   tasks:
-    - name: "Configure loopdevs for lustre block devices"
+    - name: Get server disk space
+      command:
+        cmd: "df -B MB {{ lookup('env', 'OPENSTACK_SERVER_DISK_DIR') }}" # TODO: fail if env var not set!
+      changed_when: false
+      register: server_disk_dir_df
+    - set_fact:
+        server_disk_dir_free_MB: "{{ server_disk_dir_df.stdout_lines[1].split()[3][:-2] }}" # :-2 strips off 'MB' suffix from size
+    - debug:
+        msg: "Each server disk will be {{ ((server_disk_dir_free_MB | int) * 0.2) | int }} MB"
+    
+    
+    - name: Configure loop devices for MGT/MDT/OST
       include_role:
         name: loopdev
-          loopdev_path: "" # Required. Path to file backing loop device. Created if it doesn't exist
-          loopdev_size: 0 # Required. Size of device in MB
-    - name: "Include lustre server role"
+      vars:
+        loopdev_path: "{{ lookup('env', 'OPENSTACK_SERVER_DISK_DIR') }}/{{ item }}"
+        #loopdev_size: "{{ ((server_disk_dir_free_MB | int) * 0.2) | int }}"
+        loopdev_size: "{{ 1000 }}" # TODO: FIXME
+      loop: "{{ molecule_server_disks }}"
+    - name: Find loop devices # role var registered `loopdev` is set to last result from loop so can't use that
+      command:
+        cmd: "losetup -j {{ lookup('env', 'OPENSTACK_SERVER_DISK_DIR') }}/{{ item }}"
+      changed_when: false
+      loop: "{{ molecule_server_disks }}"
+      register: losetup
+    # - debug:
+    #     var: losetup
+    - set_fact:
+        molecule_server_lodevs: "{{ losetup.results | items2dict(key_name='item', value_name='stdout') }}" # value-> e.g. "/dev/loop2: [64784]:116 (/mnt/ost)"
+    - debug:
+        var: molecule_server_lodevs
+    # - meta: end_play
+    - name: Include lustre server role
       include_role:
         name: "stackhpc.lustre.server"
       vars:
         lustre_fs_name: test_fs
         lustre_mgs_addr: "{{ hostvars[groups['servers'][0]].ansible_default_ipv4.address }}"
-        # TODO: add loop devices
+        lustre_mgt: "{{ molecule_server_lodevs['mgt'].split(':')[0] }}"
+        lustre_mdts: "{{ {0:molecule_server_lodevs['mdt'].split(':')[0] } }}" # see molecule_server_lodevs above for split() etc
+        lustre_osts: "{{ {0:molecule_server_lodevs['ost'].split(':')[0] } }}"
