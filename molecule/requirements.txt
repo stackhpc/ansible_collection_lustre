@@ -1,0 +1,5 @@
+molecule[ansible]
+molecule-openstack
+ansible
+openstacksdk
+python-openstackclient # not strictly required, but useful here

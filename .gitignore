@@ -1,0 +1,5 @@
+# openstack config files
+*openrc.sh
+# venvs
+venv*
+

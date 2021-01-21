@@ -1,0 +1,28 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: openstack
+platforms:
+  - name: molecule-lustre-server
+    image: ${MOLECULE_OPENSTACK_SERVER_IMAGE}
+    flavor: ${MOLECULE_OPENSTACK_FLAVOR}
+    network: ${MOLECULE_OPENSTACK_NETWORK}
+    #fip_pool: ${MOLECULE_OPENSTACK_FIP_POOL}
+    ssh_user: ${MOLECULE_OPENSTACK_SSH_USER}
+  - name: molecule-lustre-client-0
+    image: ${MOLECULE_OPENSTACK_CLIENT_IMAGE}
+    flavor: ${MOLECULE_OPENSTACK_FLAVOR}
+    network: ${MOLECULE_OPENSTACK_NETWORK:-molecule}
+    #fip_pool: ${MOLECULE_OPENSTACK_FIP_POOL}
+    ssh_user: ${MOLECULE_OPENSTACK_SSH_USER}
+  - name: molecule-lustre-client-1
+    image: ${MOLECULE_OPENSTACK_CLIENT_IMAGE}
+    flavor: ${MOLECULE_OPENSTACK_FLAVOR}
+    network: ${MOLECULE_OPENSTACK_NETWORK:-molecule}
+    #fip_pool: ${MOLECULE_OPENSTACK_FIP_POOL}
+    ssh_user: ${MOLECULE_OPENSTACK_SSH_USER}
+provisioner:
+  name: ansible
+verifier:
+  name: ansible
