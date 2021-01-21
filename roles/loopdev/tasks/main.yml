@@ -1,8 +1,7 @@
 - name: Create sparse file
   command:
-    cmd: "dd if=/dev/zero of={{ loopdev_path }} bs=1M seek={{ loopdev_size }} count=0"
+    cmd: "truncate -s {{ loopdev_size }}MB {{ loopdev_path }}"
     creates: "{{ loopdev_path }}"
-  register: foo
 - name: Ensure loop device exists
   loopdev:
     path: "{{ loopdev_path }}"
