@@ -1,7 +1,7 @@
 # TODO: ensure Required vars are defined.
 lustre_reformat: false # Optional. Set true to reformat all mgt/mdt/ost, e.g. if needed to change configuration. WARNING WILL DELETE DATA. Default false. # TODO: guard this somehow?
-lustre_fs_name: '' # Required. Name of filesystem
-lustre_mgs_addr: '' # Required. IP of MGS.
+lustre_fs_name: "{{ mandatory }}" # Required. Name of filesystem
+lustre_mgs_addr: "{{ mandatory }}" # Required. IP of MGS.
 # lustre_mgs_lnet: '' # TODO: Currently just use lustre_lnet but this might be different with multiple networks.
 lustre_mgt: '' # Optional. Path of block device to use for mgt. Default '' does not create mgt (and hence mgs).
 lustre_mdts: {} # Optional. Mapping with key: int, lustre-filesystem-unique index for mdt;  value: path of block device to use for mdt. Default {} does not create mdt (and hence mds).

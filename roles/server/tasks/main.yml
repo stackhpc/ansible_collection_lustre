@@ -1,11 +1,3 @@
-- name: Check required variables are set defined # TODO: is there a better way of doing this
-  assert:
-    that: "lookup('vars', '{{ item }}')"
-    fail_msg: "role variable '{{ item }}' not set"
-  loop:
-    - lustre_fs_name
-    - lustre_mgs_addr
-
 - name: Check Centos version
   assert:
     that:
