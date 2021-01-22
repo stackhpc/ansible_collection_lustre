@@ -19,7 +19,9 @@ pip install -r molecule/requirements.txt
 ```
 
 Install the roles this collection depends on, into `<repo_root>/roles`:
-TODO: needs the
+```
+ansible-galaxy install -r requirements.yml -p roles/
+```
 
 
 # Configuration
