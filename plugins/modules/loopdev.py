@@ -51,7 +51,6 @@ def run_module():
         path=dict(type="str", required=True),
         fstype=dict(type="str", required=False, default='ext4'),
     )
-
     module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
     
     path = module.params["path"]
@@ -73,16 +72,11 @@ def run_module():
     result['dev'] = loop_dev
     
     # Check for filesystem:
-    # _, lsblk, _ = module.run_command("lsblk -f %s" % path)
-    # curr_fstype = lsblk.split('\n')[1].split()[1:2] # produces either a str fstype or []
-    _, blkid, _ = module.run_command("blkid %s" % loop_dev)
-    if 'TYPE="[%s]"' % fstype not in blkid:
+    _, lsblk, _ = module.run_command("lsblk -f %s" % loop_dev)
+    fsinfo = lsblk.split('\n')[1].split() # e.g. either ['loop0'] or ['loop0', 'ext4', <label>, <uuid>]
+    if fstype not in fsinfo:
         # Make filesystem:
-        _, mkfs, _ = module.run_command("mkfs -t %s %s" % (fstype, path))
-    
-    # Mount it - can't use ansible's mount module as it always says "Error mounting /loopfs: mount: special device /dev/loop0: [2049]:6394 (/var/mgt) does not exist"
-    # presumably because it ignores virual devices?
-
+        _, mkfs, _ = module.run_command("mkfs -t %s %s" % (fstype, loop_dev))
     module.exit_json(**result)
 
 
