@@ -1,10 +1,28 @@
 ---
-# This is an example playbook to execute Ansible tests.
-
 - name: Verify
-  hosts: all
-  gather_facts: false
+  hosts: molecule-lustre-server
+  gather_facts: true
   tasks:
-  - name: Example assertion
-    assert:
-      that: true
+  - name: Read lustre info
+    command:
+      cmd: "lctl device_list"
+    register: lctl_device_list
+    become: true
+  - assert:
+      that: "'{{ item }}' in lctl_device_list.stdout"
+      fail_msg: "{{ item.split()[1] }} not shown as UP"
+      success_msg: "{{ item.split()[1] }} is UP"
+    loop:
+      - "UP mgs"
+      - "UP mds"
+      - "UP ost"
+  - assert:
+      that: "'test_fs' in lctl_device_list.stdout"
+      fail_msg: "filesystem 'test_fs' not found"
+      success_msg: "filesystem 'test_fs' found"
+  - assert:
+      that: "'UP mgc MGC{{ lustre_mgs_addr}}@tcp' in lctl_device_list.stdout"
+      fail_msg: "expected MGC NID not found"
+      success_msg: "MGC found on expected NID"
+    vars:
+      lustre_mgs_addr: "{{ hostvars['molecule-lustre-server'].ansible_default_ipv4.address }}"

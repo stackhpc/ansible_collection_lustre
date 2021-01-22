@@ -25,15 +25,14 @@
     #     var: losetup
     - set_fact:
         molecule_server_lodevs: "{{ losetup.results | items2dict(key_name='item', value_name='stdout') }}" # value-> e.g. "/dev/loop2: [64784]:116 (/mnt/ost)"
-    - debug:
-        var: molecule_server_lodevs
-    - meta: end_play
+    # - debug:
+    #     var: molecule_server_lodevs
     - name: Include lustre server role
       include_role:
         name: "stackhpc.lustre.server"
       vars:
         lustre_fs_name: test_fs
-        lustre_mgs_addr: "{{ hostvars[groups['servers'][0]].ansible_default_ipv4.address }}"
+        lustre_mgs_addr: "{{ hostvars['molecule-lustre-server'].ansible_default_ipv4.address }}"
         lustre_mgt: "{{ molecule_server_lodevs['mgt'].split(':')[0] }}"
         lustre_mdts: "{{ {0:molecule_server_lodevs['mdt'].split(':')[0] } }}" # see molecule_server_lodevs above for split() etc
         lustre_osts: "{{ {0:molecule_server_lodevs['ost'].split(':')[0] } }}"
