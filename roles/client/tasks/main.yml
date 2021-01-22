@@ -1,0 +1,87 @@
+---
+- name: Check Centos version
+  assert:
+    that:
+      - ansible_distribution_version in lustre_releases
+- name: select lustre version info # just for brevity 
+  set_fact:
+    lustre_release: "{{ lustre_releases[ansible_distribution_version] }}"
+# TODO: check kernel version??
+
+- name: Find CentOS8 PowerTools repo
+  find:
+    paths: /etc/yum.repos.d
+    patterns: CentOS-*PowerTools.repo
+  register: powertools
+  when: ansible_distribution_major_version == "8"
+
+- name: Enable CentOS8 PowerTools repo # needed for libyaml-devel on CentOS 8
+  # NB: doesn't run command  `dnf config-manager --set-enabled PowerTools` as can't make that idempotent
+  lineinfile:
+    path: "{{ powertools.files[0].path }}" # 8.2: /etc/yum.repos.d/CentOS-PowerTools.repo 8.3: /etc/yum.repos.d/CentOS-Linux-PowerTools.repo
+    create: false # raises error if not already installed
+    regexp: enabled=
+    line: enabled=1
+  when: ansible_distribution_major_version == "8"
+
+- name: Enable lustre client repo
+  yum_repository:
+    name: lustre-client
+    description: lustre-client
+    baseurl: "{{ lustre_release.client_repo }}"
+    gpgcheck: no
+- name: Install epel (for DKMS)
+  package:
+    name: epel-release
+- name: Install kernel headers
+  import_role:
+    name: stackhpc.kernel_packages
+  vars:
+    kernel_pkgs:
+      - kernel-devel
+- name: Install Lustre Client DKMS
+  yum:
+    name: "lustre-client-dkms-{{ lustre_release.lustre_ver }}"
+    state: present
+- name: Install Lustre Client kmods
+  yum:
+    name: "kmod-lustre-client-{{ lustre_release.lustre_ver }}"
+    state: present
+- name: Install Lustre Client
+  yum:
+    name: "lustre-client-{{ lustre_release.lustre_ver }}"
+    state: present
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  selinux:
+    policy: targeted
+    state: permissive
+
+# - name: configure and enable lnet
+#   import_tasks: lnet.yml
+#   when: lustre_lnet != 'tcp' # which is default
+
+# - name: raise client GSS key debug level
+#   command:
+#     cmd: "lctl set_param sptlrpc.gss.lgss_keyring.debug_level{{'='}}3"
+#     removes: "/etc/lustre{{ inventory_hostname | replace('-', '_') }}.client.key }}" # doesn't actually remove, but skips if not using ssk
+#   # TODO: not convinced this works, try
+#   # "echo 3 > /proc/fs/lustre/sptlrpc/gss/lgss_keyring/debug_level" instead
+
+- name: Create lustre config directory
+  # NB: done even if not using ssk as can always mount with -o skpath=/etc/lustre, it just won't load any keys if it's empty.
+  file:
+    path: /etc/lustre
+    state: directory
+    mode: 0600
+- name: Mount lustre filesystem
+  mount:
+    fstype: lustre
+    src: "{{ lustre_mgs_addr }}@{{ lustre_lnet }}:/{{ lustre_fs_name }}"
+    path: "{{ lustre_mount_point }}"
+    state: mounted
+    opts: "skpath=/etc/lustre,defaults,_netdev,noauto,x-systemd.automount,x-systemd.requires=lnet.service"
+    # opts are systemd defaults from http://wiki.lustre.org/Mounting_a_Lustre_File_System_on_Client_Nodes
+  register: lustre_client_mount
+  #until: "lustre_client_mount.failed == false"
+  #retries: 20
+  #delay: 1

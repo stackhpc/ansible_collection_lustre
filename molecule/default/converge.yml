@@ -1,6 +1,8 @@
 ---
 - name: Configure lustre server
   hosts: molecule-lustre-server
+  tags:
+    lustre_servers
   become: yes
   vars:
     molecule_server_disks:
@@ -36,3 +38,16 @@
         lustre_mgt: "{{ molecule_server_lodevs['mgt'].split(':')[0] }}"
         lustre_mdts: "{{ {0:molecule_server_lodevs['mdt'].split(':')[0] } }}" # see molecule_server_lodevs above for split() etc
         lustre_osts: "{{ {0:molecule_server_lodevs['ost'].split(':')[0] } }}"
+
+- name: Configure lustre clients
+  hosts: lustre_clients
+  tags:
+    - lustre_clients
+  become: yes
+  tasks:
+    - include_role:
+        name: "stackhpc.lustre.client"
+      vars:
+        lustre_fs_name: test_fs
+        lustre_mgs_addr: "{{ hostvars['molecule-lustre-server'].ansible_default_ipv4.address }}"
+  

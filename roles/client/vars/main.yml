@@ -1,0 +1,9 @@
+# keyed off ansible_distribution_version
+# see https://wiki.whamcloud.com/display/PUB/Lustre+Support+Matrix
+lustre_releases:
+  "7.8": # FIXME: UNTESTED!
+    lustre_ver: "2.12.5"
+    client_repo: https://downloads.whamcloud.com/public/lustre/lustre-2.12.5/el7.8.2003/client/
+  "8.2":
+    lustre_ver: "2.12.6"
+    client_repo: "https://downloads.whamcloud.com/public/lustre/lustre-2.12.6/el8/client/" # NB note only specific ver there is 8.3, which this isn't!

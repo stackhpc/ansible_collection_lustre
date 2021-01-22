@@ -1,5 +1,5 @@
 ---
-- name: Verify
+- name: Verify server functionality
   hosts: molecule-lustre-server
   gather_facts: true
   tasks:
@@ -8,6 +8,7 @@
       cmd: "lctl device_list"
     register: lctl_device_list
     become: true
+    changed_when: false
   - assert:
       that: "'{{ item }}' in lctl_device_list.stdout"
       fail_msg: "{{ item.split()[1] }} not shown as UP"
@@ -26,3 +27,25 @@
       success_msg: "MGC found on expected NID"
     vars:
       lustre_mgs_addr: "{{ hostvars['molecule-lustre-server'].ansible_default_ipv4.address }}"
+
+- name: Verify server functionality
+  hosts: lustre_clients
+  gather_facts: true
+  tasks:
+  - name: Read lustre info
+    command:
+      cmd: "lctl device_list"
+    register: lctl_device_list
+    become: true
+    changed_when: false
+  - assert:
+      that: "'UP mgc MGC{{ lustre_mgs_addr}}@tcp' in lctl_device_list.stdout"
+      fail_msg: "expected MGC NID not found"
+      success_msg: "MGC found on expected NID"
+    vars:
+      lustre_mgs_addr: "{{ hostvars['molecule-lustre-server'].ansible_default_ipv4.address }}"
+  - assert:
+      that: "'/mnt/lustre' in ansible_mounts | map(attribute='mount')"
+      fail_msg: "lustre filesystem is not mounted"
+      success_msg: "lustre filesystem is mounted"
+      
