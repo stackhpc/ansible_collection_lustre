@@ -19,7 +19,7 @@ pip install -r molecule/requirements.txt
 ```
 
 Install the roles this collection depends on, into `<repo_root>/roles`:
-TODO:
+TODO: needs the
 
 
 # Configuration
@@ -41,7 +41,9 @@ Using the above, copy `molecule/alaska-config.yml` and create a config file for 
 # Tests
 
 The following tests are defined:
-- `default`: Checks role defaults work
+- `default`: Checks role defaults work. It creates:
+    - A combined MGS/MDS/OSS Lustre server. The MGT/MDT/OST are created on loop devices backed by files created in the directory specified by `OPENSTACK_SERVER_DISK_DIR`. This must have 1.5GB of space available.
+  It checks that: TODO:
 
 Run tests using:
 
