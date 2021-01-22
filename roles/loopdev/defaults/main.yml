@@ -1,5 +1,4 @@
-loopdev_path: "" # Required. Path to file backing loop device. Created if it doesn't exist
-loopdev_size: 0 # Required. Size of device in MB
+loopdev_path: "{{ mandatory }}" # Required. Path to file backing loop device. Created if it doesn't exist
 loopdev_fstype: ext4 # Optional. Filesystem type (default: ext4)
 #loopdev_mountpoint: # Optional. Define a path to mount loop device. Will be created if it doesn't exist
 loopdev_mountstate: mounted # see ansible.posix.mount:state

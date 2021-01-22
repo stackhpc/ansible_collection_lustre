@@ -1,6 +1,6 @@
 - name: Create sparse file
   command:
-    cmd: "truncate -s {{ loopdev_size }}MB {{ loopdev_path }}"
+    cmd: "truncate -s {{ loopdev_size | mandatory }} {{ loopdev_path }}"
     creates: "{{ loopdev_path }}"
 - name: Ensure loop device exists
   loopdev:
