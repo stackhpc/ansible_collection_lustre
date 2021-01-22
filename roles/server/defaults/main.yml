@@ -1,4 +1,3 @@
-# TODO: ensure Required vars are defined.
 lustre_reformat: false # Optional. Set true to reformat all mgt/mdt/ost, e.g. if needed to change configuration. WARNING WILL DELETE DATA. Default false. # TODO: guard this somehow?
 lustre_fs_name: "{{ mandatory }}" # Required. Name of filesystem
 lustre_mgs_addr: "{{ mandatory }}" # Required. IP of MGS.
