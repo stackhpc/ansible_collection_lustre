@@ -2,4 +2,4 @@
 *openrc.sh
 # venvs
 venv*
-
+roles/stackhpc.kernel
