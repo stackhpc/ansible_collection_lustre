@@ -46,11 +46,20 @@ The following tests are defined:
 - `default`: Checks role defaults work. It creates:
     - A combined MGS/MDS/OSS Lustre server. The MGT/MDT/OST are created on loop devices backed by files created in the directory specified by `OPENSTACK_SERVER_DISK_DIR`. This must have 1.5GB of space available.
   It checks that: TODO:
+- `exporter-build`: Runs on localhost, checks it can build HPL's Prometheus Lustre exporter
 
 Run tests using:
 
 ```shell
-molecule --env-file molecule/alaska-config.yml test
+molecule --env-file <path_to_cloud_config> test [-s <scenario_name>]
 ```
 
-or whatever your cloud config file is.
+where `<path_to_cloud_config>` was created in the Configuration step above.
+
+# Adding new scenarios
+
+Change to the root of the repo directory and run
+
+```shell
+molecule init scenario <scenario_name> --driver-name openstack
+```

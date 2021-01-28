@@ -1,6 +1,11 @@
+# Lustre server image:
 MOLECULE_OPENSTACK_CLIENT_IMAGE: CentOS-8-GenericCloud-8.2.2004-20200611.2.x86_64 # 8.2
+# Lustre client image:
 MOLECULE_OPENSTACK_SERVER_IMAGE: CentOS-7-x86_64-GenericCloud-2009 # 7.9
-OPENSTACK_SERVER_DISK_DIR: "/mnt" # TODO: document, and space used
+# Ansible control host image - where prometheus exporter is built
+MOLECULE_OPENSTACK_ANSIBLECTL_IMAGE: CentOS-8-GenericCloud-8.2.2004-20200611.2.x86_64 # 8.2
+# Path to server directory to use for server disk loop devices
+OPENSTACK_SERVER_DISK_DIR: "/mnt"
 MOLECULE_OPENSTACK_FLAVOR: optimised.v1.small
 MOLECULE_OPENSTACK_NETWORK: ilab
 MOLECULE_OPENSTACK_SSH_USER: centos
