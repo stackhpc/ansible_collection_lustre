@@ -1,0 +1,14 @@
+lustre_exporter_builddir: /tmp/lustre_exporter_build
+lustre_exporter_installdir: /usr/local/bin
+lustre_exporter_group: "lustre-exp"
+lustre_exporter_user: "{{ lustre_exporter_group }}"
+
+lustre_exporter_flags: # values: disabled, core, extended see https://github.com/HewlettPackard/lustre_exporter#flags
+  ost: extended
+  mdt: extended
+  mgs: extended
+  mds: extended
+  client: extended
+  generic: extended
+  lnet: extended
+  health: extended

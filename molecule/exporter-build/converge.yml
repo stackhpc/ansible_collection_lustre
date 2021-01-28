@@ -1,0 +1,21 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Install git
+      package:
+        name: git
+      become: true
+    - name: Install make
+      package:
+        name: make
+      become: true
+    - name: Install gcc
+      package:
+        name: gcc
+      become: true
+    - name: "Include lustre"
+      include_role:
+        name: "stackhpc.lustre.exporter"
+        tasks_from: build
+

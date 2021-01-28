@@ -1,0 +1,44 @@
+
+---
+- name: Create the lustre_exporter group
+  group:
+    name: "{{ lustre_exporter_group }}"
+    state: present
+    system: true
+  when: lustre_exporter_group != "root"
+
+- name: Create the lustre_exporter user
+  user:
+    name: "{{ lustre_exporter_user }}"
+    groups: "{{ lustre_exporter_group }}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+    home: /
+  when: lustre_exporter_user != "root"
+
+- name: Copy the lustre_exporter systemd service file
+  template:
+    src: lustre_exporter.service.j2
+    dest: /etc/systemd/system/lustre_exporter.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart node_exporter
+
+- name: Propagate lustre_exporter binaries
+  copy:
+    src: "{{ lustre_exporter_binary }}"
+    dest: "{{ lustre_exporter_installdir }}/lustre_exporter"
+    mode: 0755
+    owner: root
+    group: root
+  notify: restart node_exporter
+
+- name: Enable lustre_exporter service
+  systemd:
+    name: lustre_exporter
+    enabled: true
+  when:
+    - not ansible_check_mode

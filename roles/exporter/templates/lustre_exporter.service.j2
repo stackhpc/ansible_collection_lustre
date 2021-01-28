@@ -1,0 +1,22 @@
+{{ 'ansible_managed' | comment }}
+
+[Unit]
+Description=HP Lustre Exporter
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ lustre_exporter_user }}
+Group={{ lustre_exporter_group }}
+ExecStart={{ lustre_exporter_installdir }}/lustre_exporter{% for flag in lustre_exporter_flags | dict2items %} --collector.{{ flag.key }}={{ flag.value }}{% endfor %}
+
+SyslogIdentifier=lustre_exporter
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+#ProtectHome=yes
+#ProtectSystem=strict
+#ProtectControlGroups=true
+#ProtectKernelModules=true
+#ProtectKernelTunables=yes

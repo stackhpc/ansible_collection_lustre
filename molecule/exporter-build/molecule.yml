@@ -1,0 +1,16 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: openstack
+platforms:
+  - name: molecule-builder # normally we probably build this on the ansible control host but can test different images for that here
+    image: ${MOLECULE_OPENSTACK_ANSIBLECTL_IMAGE}
+    flavor: ${MOLECULE_OPENSTACK_FLAVOR}
+    network: ${MOLECULE_OPENSTACK_NETWORK}
+    #fip_pool: ${MOLECULE_OPENSTACK_FIP_POOL}
+    ssh_user: ${MOLECULE_OPENSTACK_SSH_USER:-cloud-user}
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

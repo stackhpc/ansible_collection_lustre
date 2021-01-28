@@ -1,0 +1,24 @@
+# Need this fork for lustre 1.12 support github.com/marquis-wang/lustre_exporter
+# However install instructions using `go get` don't work so have to do it manually instead
+
+- name: Make build dir
+  file:
+    path: "{{ lustre_exporter_builddir }}"
+    state: directory
+- name: Install go (into non-default directory)
+  unarchive:
+    remote_src: yes
+    src: "{{ lustre_exporter_go_src }}"
+    dest: "{{ lustre_exporter_builddir }}"
+- name: Clone fork of HP lustre exporter supporting lustre 1.12 # using `go get` doesn't work :-(
+  git:
+    repo: "{{ lustre_exporter_repo }}"
+    dest: "{{ lustre_exporter_builddir}}/{{lustre_exporter_src }}" # makes it match what makefile expects if fork was merged
+    version: "{{ lustre_exporter_ver }}"
+- name: Build
+  command:
+    cmd: "make build" # uses build to avoid failing lint steps
+    chdir: "{{ lustre_exporter_builddir}}/{{lustre_exporter_src }}"
+    creates: "{{ lustre_exporter_builddir}}/{{lustre_exporter_src }}/lustre_exporter"
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ lustre_exporter_builddir}}/go/bin" # NB this requires facts

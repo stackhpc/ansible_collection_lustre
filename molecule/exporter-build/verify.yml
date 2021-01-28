@@ -1,0 +1,13 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Check lustre exporter built ok
+  hosts: all
+  gather_facts: false
+  tasks:
+  - assert:
+      that: "bin_path is exists"
+      fail_msg: "exporter binary not found at {{ bin_path }}"
+      success_msg: "exporter binary found"
+    vars:
+      bin_path: "/tmp/lustre_exporter_build/go/src/github.com/HewlettPackard/lustre_exporter/lustre_exporter"

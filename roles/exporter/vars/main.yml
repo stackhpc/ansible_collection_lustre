@@ -1,0 +1,7 @@
+# These all work together to get a fork of github.com/HewlettPackard/lustre_exporter supporting lustre 12
+# and build it in the same place the makefile expects (i.e. as if it wasn't a fork)
+lustre_exporter_repo: "https://github.com/marquis-wang/lustre_exporter"
+lustre_exporter_ver: "c362e91"
+lustre_exporter_go_src: "https://golang.org/dl/go1.12.17.linux-amd64.tar.gz" # had problems with newer versions
+lustre_exporter_src: "go/src/github.com/HewlettPackard/lustre_exporter"
+lustre_exporter_binary: "{{ lustre_exporter_builddir}}/{{lustre_exporter_src }}/lustre_exporter"
