@@ -50,7 +50,7 @@
   # TODO: make persistent on boot via /etc/modules-load.d/
 
 - name: Format MGT
-  command: /usr/sbin/mkfs.lustre --mgs {{ lustre_mgt }}
+  command: "/usr/sbin/mkfs.lustre --mgs {% if lustre_reformat | bool %}--reformat{% endif %} {{ lustre_mgt }}"
   register: command_result
   failed_when: "command_result.rc != 0 and ('was previously formatted for lustre' not in command_result.stderr) and command_result.rc != 17"
   changed_when: "command_result.rc == 0"
