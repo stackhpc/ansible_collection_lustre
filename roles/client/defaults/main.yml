@@ -2,3 +2,4 @@ lustre_mgs_addr: "{{ mandatory }}" # Required. IP of MGS.
 lustre_lnet: 'tcp'
 lustre_fs_name: "{{ mandatory }}"
 lustre_mount_point: /mnt/lustre
+lustre_mount_state: mounted

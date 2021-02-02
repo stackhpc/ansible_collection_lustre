@@ -15,6 +15,7 @@ Role Variables
 - `lustre_mgs_addr`: Required. IP of MGS.
 - `lustre_fs_name`: Required. Name of filesystem.
 - `lustre_mount_point`: Optional. Mountpoint on client, will be created if it doesn't exist. Default `/mnt/lustre`.
+- `lustre_mount_state`: Optional. Mount state as for `state` parameter of `ansible.posix.mount`. Default `mounted`.
 
 Dependencies
 ------------
