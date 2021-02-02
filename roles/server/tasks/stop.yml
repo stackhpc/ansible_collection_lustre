@@ -1,0 +1,28 @@
+# NB will need need clients UNMOUNTED and nodemap DEACTIVATED before running this if its making changes?
+# NB order is not the same as start, unfortunately!
+
+- name: Stop MDTs
+  mount:
+    fstype: lustre
+    src: "{{ item.value }}"
+    path: "/lustre/{{ lustre_fs_name }}/mdt{{ item.key }}"
+    state: unmounted
+  loop: "{{ lustre_mdts | dict2items }}"
+  when: lustre_mdts | default({})
+
+- name: Stop OSTs
+  mount:
+    fstype: lustre
+    src: "{{ item.value }}"
+    path: "/lustre/{{ lustre_fs_name }}/ost{{ item.key }}"
+    state: unmounted
+  loop: "{{ lustre_osts | dict2items }}"
+  when: lustre_osts | default({})
+
+- name: Stop MGSs
+  mount:
+    fstype: lustre
+    src: "{{ lustre_mgt }}"
+    path: "/lustre/mgt"
+    state: unmounted
+  when: lustre_mgt | default('')
