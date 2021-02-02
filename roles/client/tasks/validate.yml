@@ -1,0 +1,8 @@
+---
+
+- name: Assert that lustre_mgs_addr is defined
+  assert:
+    that: lustre_mgs_addr is defined
+- name: Assert that lustre_fs_name is defined
+  assert:
+    that: lustre_fs_name is defined
