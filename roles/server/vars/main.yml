@@ -1,10 +1,31 @@
-# keyed off ansible_distribution_version
-# see https://wiki.whamcloud.com/display/PUB/Lustre+Support+Matrix
-lustre_releases:
-  "7.8":
-    lustre_ver: "2.12.5"
-    e2fsprogs: "latest"
-  "7.9":
-    lustre_ver: "2.12.6"
-    e2fsprogs: "latest"
+# Keyed off ansible_distribution_version
+# NB: For Lustre servers using IB (o2ib) there is a hard requirement on kernel version for a specific Lustre release, as Lustre release -> specific Mellanox OFED version -> specific kernel
+# For Lustre servers using tcp any kernel /might/ work although only some are known to work
+# - See https://wiki.whamcloud.com/display/PUB/Lustre+Support+Matrix for overview of Lustre versions inc. LTS and supported RHEL versions
+# - See https://downloads.whamcloud.com/public/lustre/ for Lustre versions inc. RHEL and Mellanox OFED versions
+# - See https://linux.mellanox.com/public/repo/mlnx_ofed for Mellanox downloads
+# - Run something like the below to see which kernel a Mellanox OFED version supports:
+#     rpm -qlp https://linux.mellanox.com/public/repo/mlnx_ofed/4.9-2.2.4.0/rhel7.9/x86_64/COMMON/kmod-mlnx-ofa_kernel-4.9-OFED.4.9.2.2.4.1.rhel7u9.x86_64.rpm | grep /lib/modules | awk -F "/" '{print $4}' | uniq
 
+lustre_whamcloud_url: "https://downloads.whamcloud.com/public"
+
+lustre_server_releases:
+  "7.8":
+      tcp:
+        lustre_ver: "2.12.5"
+        e2fsprogs: "latest"
+      o2ib:
+        lustre_ver: "2.12.5"
+        e2fsprogs: "latest"
+        ofed_ver: "4.9-0.1.7.0"
+        kernel: "3.10.0-1127.el7.x86_64"
+  "7.9":
+      tcp:
+        lustre_ver: "2.12.6"
+        lustre_repo: "https://downloads.whamcloud.com/public/lustre/lustre-2.12.6/el7.9.2009/patchless-ldiskfs-server"
+        e2fsprogs: "latest"
+      o2ib:
+        lustre_ver: "2.12.6"
+        e2fsprogs: "latest"
+        ofed_ver: "4.9-2.2.4.0"
+        kernel: "3.10.0-1160.el7.x86_64"

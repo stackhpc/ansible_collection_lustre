@@ -5,4 +5,4 @@ lustre_mgs_addr: "{{ mandatory }}" # Required. IP of MGS.
 lustre_mgt: '' # Optional. Path of block device to use for mgt. Default '' does not create mgt (and hence mgs).
 lustre_mdts: {} # Optional. Mapping with key: int, lustre-filesystem-unique index for mdt;  value: path of block device to use for mdt. Default {} does not create mdt (and hence mds).
 lustre_osts: {} # Optional. Mapping key: int, lustre-filesystem-unique index for ost;  value: path of block device to use for ost. Default {} does not create ost (and hence oss).
-lustre_lnet: tcp # Optional. Name of lnet. Default 'tcp'
+lustre_lnet: tcp # Optional. Name of lnet. Default 'tcp' or 'o2ib'

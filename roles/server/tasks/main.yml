@@ -1,19 +1,26 @@
 - name: Check Centos version
   assert:
     that:
-      - ansible_distribution_version in lustre_releases
-    fail_msg: "ansible_distribution_version must be one of {{ lustre_releases.keys() | list }}, not {{ ansible_distribution_version }}"
+      - ansible_distribution_version in lustre_server_releases
+    fail_msg: "ansible_distribution_version must be one of {{ lustre_server_releases.keys() | list }}, not {{ ansible_distribution_version }}"
     success_msg: "CentOS version ok"
+- name: set lnet type
+  set_fact:
+    lustre_lnet_type: "{{ lustre_lnet | regex_replace('\\d$', '') }}"
+- name: check lnet type is supported
+  assert:
+    that: lustre_lnet_type in ['tcp', 'o2ib']
+    fail_msg: "lustre_lnet value of {{ lustre_lnet_type }} does not start with 'tcp' or 'o2ib'"
 - name: select lustre release info # just for brevity
   set_fact:
-    lustre_release: "{{ lustre_releases[ansible_distribution_version] }}"
+    lustre_server_release: "{{ lustre_server_releases[ansible_distribution_version][lustre_lnet] }}"
 
 - name: enable lustre server repo
   yum_repository:
     name: lustre-server
     description: lustre-server
-    file: lustre-repo
-    baseurl: https://downloads.whamcloud.com/public/lustre/lustre-{{ lustre_release.lustre_ver }}/el{{ ansible_distribution_major_version }}/patchless-ldiskfs-server # TODO: add "-ib" option
+    file: lustre-server
+    baseurl: "{{ lustre_server_release.lustre_repo }}"
     gpgcheck: no
   register: lustre_server_repo
 - name: enable lustre e2fs repo
@@ -21,7 +28,7 @@
     name: e2fsprogs-wc
     description: e2fsprogs-wc
     file: lustre-repo
-    baseurl: https://downloads.whamcloud.com/public/e2fsprogs/{{ lustre_release.e2fsprogs}}/el{{ ansible_distribution_major_version }}/
+    baseurl: https://downloads.whamcloud.com/public/e2fsprogs/{{ lustre_server_release.e2fsprogs}}/el{{ ansible_distribution_major_version }}/
     gpgcheck: no
   register: lustre_e2fs_repo
 - name: yum-clean-metadata
@@ -32,7 +39,7 @@
 
 - name: Install Lustre Server
   yum:
-    name: "lustre-{{ lustre_release.lustre_ver }}"
+    name: "lustre-{{ lustre_server_release.lustre_ver }}"
 - name: Put SELinux in permissive mode, logging actions that would be blocked.
   selinux:
     policy: targeted
