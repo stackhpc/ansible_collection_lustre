@@ -27,6 +27,8 @@
   vars:
     ofed_repo_file: "{{ lustre_server_release.ofed_repo }}"
   when: lustre_lnet_type == 'o2ib'
+- debug:
+    msg: "#TODO: ensure IB interface has an IP address"
 
 - name: enable lustre server repo
   yum_repository:
