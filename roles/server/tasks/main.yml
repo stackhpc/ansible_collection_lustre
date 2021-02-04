@@ -15,6 +15,19 @@
   set_fact:
     lustre_server_release: "{{ lustre_server_releases[ansible_distribution_version][lustre_lnet] }}"
 
+- name: ensure correct kernel running
+  include_role:
+    name: stackhpc.kernel_packages
+  vars:
+    kernel_version: "{{ lustre_server_release.kernel }}"
+  when: lustre_lnet_type == 'o2ib'
+- name: install ofed
+  include_role:
+    name: stackhpc.ofed
+  vars:
+    ofed_repo_file: "{{ lustre_server_release.ofed_repo }}"
+  when: lustre_lnet_type == 'o2ib'
+
 - name: enable lustre server repo
   yum_repository:
     name: lustre-server
@@ -27,7 +40,7 @@
   yum_repository:
     name: e2fsprogs-wc
     description: e2fsprogs-wc
-    file: lustre-repo
+    file: e2fsprogs
     baseurl: https://downloads.whamcloud.com/public/e2fsprogs/{{ lustre_server_release.e2fsprogs}}/el{{ ansible_distribution_major_version }}/
     gpgcheck: no
   register: lustre_e2fs_repo
