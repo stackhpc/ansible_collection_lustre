@@ -2,8 +2,9 @@
   template:
     src: "templates/lnet.conf.j2"
     dest: "/etc/lnet.conf"
-  when: lustre_lnet_networks is defined
-  # TODO: get IP from ansible for given interface if not defined there
+  # templating is wacky because of https://github.com/ansible/ansible/issues/28427 which lnet doesn't parse
+  # TODO: check this works for multiple networks, and document var
+  # TODO: get IP from ansible for given interface if not defined there <-- shouldn't need this actually
 
 - name: start lnet service
   # this loads the above
@@ -11,6 +12,7 @@
     name: lnet
     state: started
     enabled: true
+# TODO: FIXME: FAILS
 # - name: Export existing lnet conf
 #   command: "lnetctl export /etc/lnet.conf.old"
 # - name: Delete existing lnet conf

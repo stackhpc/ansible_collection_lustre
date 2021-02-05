@@ -7,5 +7,5 @@
 # by lnetctl.
 {% if lustre_lnet_networks is defined %}
 net:
-  {{ lustre_lnet_networks | to_nice_yaml(indent=2) }}
+  {{ lustre_lnet_networks | to_nice_yaml(indent=2) | trim | indent(2)}}
 {% endif %}

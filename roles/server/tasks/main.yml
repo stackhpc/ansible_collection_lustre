@@ -70,7 +70,7 @@
     state: permissive
 
 - name: configure & start lnet
-  include_role:
+  import_role:
     name: stackhpc.lustre.lnet
   when: lustre_lnet_networks != {}
 

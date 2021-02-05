@@ -14,15 +14,19 @@ Role Variables
 - `lustre_reformat`: Optional, default `false`. Set `true` to reformat all mgt/mdt/ost, e.g. if needed to change configuration  **WARNING: THIS WILL DELETE ALL DATA **.
 - `lustre_fs_name`: Required. Name of filesystem.
 - `lustre_mgs_addr`: Required. IP of MGS.
-- `lustre_mgt`: Optional. Path of block device to use for mgt. Default '' does not create mgt (and hence mgs).
+- `lustre_mgt`: Optional. Path of block device to use for MGT. Default '' does not create MGT/MGS.
 - `lustre_mdts`: Optional. Mapping with
     - key: integer index for MDT, unique to filesystem (i.e. spans all MDS)
     - value: path of block device to use for MDT.
 
-  Default `{}` does not create MDT (and hence MDS).
+  Default `{}` does not create MDT/MDS.
 
-- `lustre_osts`: Optional, as for `lustre_mdts` but for OSTs. Default `{}` does not create OST (and hence OSS).
-- `lustre_lnet`: Optional. Name of lnet. Default `tcp`. **NB** currently this is the only one supported.
+- `lustre_osts`: Optional, as for `lustre_mdts` but for OSTs. Default `{}` does not create OST/OSS.
+- `lustre_lnet`: Optional. Name of lnet, must start with `tcp` or `o2ib` (for InfiniBand). Default is `tcp`.
+
+# TODO: document `lnet` role vars too.
+
+Note that setting 
 
 Dependencies
 ------------
