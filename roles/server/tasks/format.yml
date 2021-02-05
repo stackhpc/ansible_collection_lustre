@@ -1,0 +1,25 @@
+- name: Format MGT
+  command: "/usr/sbin/mkfs.lustre --mgs {% if lustre_reformat | bool %}--reformat{% endif %} {{ lustre_mgt }}"
+  register: command_result
+  failed_when: "command_result.rc != 0 and ('was previously formatted for lustre' not in command_result.stderr) and command_result.rc != 17"
+  changed_when: "command_result.rc == 0"
+  when: lustre_mgt | default('')
+  # TODO: run `lctl device_list` and check the management client entry matches the mgs node - if not, add reformat? "1 UP mgc MGC10.43.108.228@tcp 992a19e5-c7cd-b9af-b499-43e1f6b4348d 4"
+
+- name: Format MDTs
+  command: "/usr/sbin/mkfs.lustre --mdt {% if lustre_reformat | bool %}--reformat{% endif %} --fsname={{ lustre_fs_name }} --index={{ item.key }} --mgsnode={{ lustre_mgs_addr }}@{{ lustre_lnet }} {{ item.value }}"
+  register: command_result
+  loop: "{{ lustre_mdts | dict2items }}"
+  failed_when: "command_result.rc != 0 and ('was previously formatted for lustre' not in command_result.stderr) and command_result.rc != 17"
+  changed_when: "command_result.rc == 0"
+  when: lustre_mdts | default({})
+  # TODO: see check against mgs nid above
+
+- name: Format OSTs
+  command: "/usr/sbin/mkfs.lustre --ost {% if lustre_reformat | bool %}--reformat{% endif %} --fsname={{ lustre_fs_name }} --index={{ item.key }} --mgsnode={{ lustre_mgs_addr }}@{{ lustre_lnet }} {{ item.value }}"
+  register: command_result
+  loop: "{{ lustre_osts  | dict2items }}"
+  failed_when: "command_result.rc != 0 and ('was previously formatted for lustre' not in command_result.stderr) and command_result.rc != 17"
+  changed_when: "command_result.rc == 0"
+  when: lustre_osts | default({})
+  # TODO: see check against mgs nid above

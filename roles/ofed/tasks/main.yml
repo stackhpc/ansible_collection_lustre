@@ -1,0 +1,19 @@
+# NB This role assumes that an ofed release matching the CURRENT kernel is installed (b/c we ensure that)
+# To install OFED and up/downgrade the current kernel to match, see stackhpc.ofed
+- name: install OFED repo
+  command: yum-config-manager --add-repo {{ lustre_ofed_repofile }}
+  # NB this is something like https://linux.mellanox.com/public/repo/mlnx_ofed/latest/rhel7.8/mellanox_mlnx_ofed.repo
+  # - there's no repodata/ so can't use yum_repository module
+  args:
+    creates: /etc/yum.repos.d/mellanox_mlnx_ofed.repo
+
+- name: install OFED GPG key
+  rpm_key:
+    key: http://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox
+
+- name: install infiniband support
+  yum:
+    name: "@Infiniband Support"
+    state: present
+  notify:
+    - reboot and wait for restart

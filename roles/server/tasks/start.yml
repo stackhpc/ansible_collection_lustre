@@ -1,0 +1,26 @@
+- name: mount MGSs
+  mount:
+    fstype: lustre
+    src: "{{ lustre_mgt }}"
+    path: "/lustre/mgt"
+    state: mounted
+  when: lustre_mgt | default('')
+
+# TODO: consider order advice under Why not start the MDS after the OSSs? at https://wiki.lustre.org/Starting_and_Stopping_Lustre_Services
+- name: mount MDTs
+  mount:
+    fstype: lustre
+    src: "{{ item.value }}"
+    path: "/lustre/{{ lustre_fs_name }}/mdt{{ item.key }}"
+    state: mounted
+  loop: "{{ lustre_mdts | dict2items }}"
+  when: lustre_mdts | default({})
+  
+- name: mount OSTs
+  mount:
+    fstype: lustre
+    src: "{{ item.value }}"
+    path: "/lustre/{{ lustre_fs_name }}/ost{{ item.key }}"
+    state: mounted
+  loop: "{{ lustre_osts | dict2items }}"
+  when: lustre_osts | default({})

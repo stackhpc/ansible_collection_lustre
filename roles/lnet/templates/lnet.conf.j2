@@ -1,0 +1,11 @@
+#jinja2:lstrip_blocks: True
+# {{ ansible_managed }}
+---
+# lnet.conf - configuration file for lnet routes to be imported by lnetctl
+#
+# This configuration file is formatted as YAML and can be imported
+# by lnetctl.
+{% if lustre_lnet_networks is defined %}
+net:
+  {{ lustre_lnet_networks | to_nice_yaml(indent=2) }}
+{% endif %}

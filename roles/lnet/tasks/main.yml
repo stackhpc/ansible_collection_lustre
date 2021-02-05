@@ -1,0 +1,20 @@
+- name: manage /etc/lnet.conf
+  template:
+    src: "templates/lnet.conf.j2"
+    dest: "/etc/lnet.conf"
+  when: lustre_lnet_networks is defined
+  # TODO: get IP from ansible for given interface if not defined there
+
+- name: start lnet service
+  # this loads the above
+  service:
+    name: lnet
+    state: started
+    enabled: true
+# - name: Export existing lnet conf
+#   command: "lnetctl export /etc/lnet.conf.old"
+# - name: Delete existing lnet conf
+#   command: "lnetctl import --del /etc/lnet.conf.old"
+#   ignore_errors: yes # will get errors from exported non-deletable bits like "peer ni"
+# - name: Import new lnet conf
+#   command: "lnetctl import /etc/lnet.conf"

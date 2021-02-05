@@ -1,0 +1,2 @@
+- name: reboot and wait for restart
+  reboot:

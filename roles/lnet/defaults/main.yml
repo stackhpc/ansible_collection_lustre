@@ -1,0 +1,13 @@
+lustre_lnet_networks: {} # optional, default uses tcp lnet on first interface, or e.g.:
+#  'o2ib2':
+#    - ip: '10.44.241.5' # optional, if defined a static ip is defined via ifcfg file, otherwise IP discovered from first interface
+#      netmask: '255.255.0.0' # required if `ip` defined
+#      interfaces:
+#         - 'ib0'
+#      tunables: # optional
+#        peer_credits: '32'
+#        peer_credits_hiw: '16'
+#        concurrent_sends: '16'
+#        map_on_demand: '256'
+#        credits: '2048'
+#        ntx: '2048'

@@ -1,0 +1,19 @@
+- name: Create MGS mount directory
+  file:
+    path: /lustre/mgt
+    state: directory
+    recurse: yes
+
+- name: Create MDT mount directory
+  file:
+    path: /lustre/{{ lustre_fs_name }}/mdt{{ item.key }}
+    state: directory
+    recurse: yes
+  loop: "{{ lustre_mdts | dict2items }}"
+
+- name: Create OST mount directory
+  file:
+    path: /lustre/{{ lustre_fs_name }}/ost{{ item.key }}
+    state: directory
+    recurse: yes
+  loop: "{{ lustre_osts | dict2items }}"

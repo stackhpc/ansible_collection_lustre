@@ -1,0 +1,12 @@
+- name: set lnet type
+  set_fact:
+    lustre_lnet_types: "{{ lustre_lnet_networks | map(attribute='net') | list | map('regex_replace', '\\d+$', '') | list }}" # TODO: or 'tcp' if is empty
+- debug:
+    msg: "{{ lustre_lnet_types }}"
+# TODO: validate that all (user-supplied) protocols end with digit(s)
+- name: check lnet type is supported
+  assert:
+    that: lustre_lnet_types | difference(['tcp', 'o2ib']) | length == 0
+    fail_msg: "Currently only support 'tcp' or 'o2ib' lnet types, found {{ lustre_lnet_types | difference(['tcp', 'o2ib']) }}"
+
+# lustre_lnet_networks.keys()

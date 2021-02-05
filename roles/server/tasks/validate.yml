@@ -1,0 +1,9 @@
+- name: Check Centos version
+  assert:
+    that:
+      - ansible_distribution_version in lustre_server_releases
+    fail_msg: "ansible_distribution_version must be one of {{ lustre_server_releases.keys() | list }}, not {{ ansible_distribution_version }}"
+    success_msg: "CentOS version ok"
+- name: select lustre release info # just for brevity
+  set_fact:
+    lustre_server_release: "{{ lustre_server_releases[ansible_distribution_version][lustre_lnet] }}"
